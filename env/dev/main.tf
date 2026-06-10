@@ -8,15 +8,6 @@ locals {
   }
 }
 
-# the ecr module
-module "ecr" {
-  source               = "../../modules/Ecr"
-  repository_name      = var.repository_name
-  image_tag_mutability = var.image_tag_mutability
-  scan_on_push         = var.scan_on_push
-  kms_key_arn          = var.kms_key_arn
-  tags                 = merge(local.common_tags, var.tags)
-}
 
 module "iam" {
   source = "../../modules/Iam"
@@ -66,7 +57,27 @@ module "vpc" {
 }
 
 
+# load balancer module 
 
+module "load_balancer" {
+  source          = "../../modules/Load-balancer"
+  name            = "${var.project_name}-alb"
+  internal        = false
+  subnets         = module.vpc.public_subnet_ids
+  security_groups = [aws_security_group.alb.id]
+  tags            = merge(local.common_tags, var.tags)
+}
+
+
+# the ecr module
+module "ecr" {
+  source               = "../../modules/Ecr"
+  repository_name      = var.repository_name
+  image_tag_mutability = var.image_tag_mutability
+  scan_on_push         = var.scan_on_push
+  kms_key_arn          = var.kms_key_arn
+  tags                 = merge(local.common_tags, var.tags)
+}
 
 #ecs module
 
