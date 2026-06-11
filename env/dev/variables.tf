@@ -19,6 +19,12 @@ variable "kms_key_arn" {
   default     = null
 }
 
+variable "certificate_arn" {
+  description = "ACM certificate ARN for HTTPS listener on the ALB"
+  type        = string
+  default     = null
+}
+
 variable "image_tag_mutability" {
   description = "Image tag mutability setting"
 
