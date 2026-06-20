@@ -1,0 +1,103 @@
+Project explanation notes
+=========================
+
+Is project ko explain karte waqt simple story yeh rakhni hai:
+
+Maine Terraform se AWS par ek production-style container platform banaya. Is mein networking, compute, database, cache, IAM, image registry aur monitoring sab reusable modules mein divide hain. Dev, stage aur prod environments alag folders mein hain, taake same architecture ko controlled settings ke saath promote kiya ja sake.
+
+Architecture flow
+-----------------
+
+User internet se Application Load Balancer par request bhejta hai. ALB public subnets mein hai. ECS Fargate tasks private subnets mein run karte hain aur unke paas public IP nahi hoti. ALB security group public HTTP/HTTPS allow karta hai. ECS security group sirf ALB se traffic accept karta hai. RDS aur Redis private subnets mein hain aur sirf ECS security group se database/cache ports accept karte hain.
+
+Cost optimization
+-----------------
+
+Normally private subnets ko internet/AWS services tak jane ke liye NAT Gateway use hota hai, jo fixed hourly cost create karta hai. Dev environment mein `nat_gateway_strategy = "none"` rakha aur VPC endpoints add kiye:
+
+- S3 gateway endpoint
+- DynamoDB gateway endpoint
+- ECR API interface endpoint
+- ECR Docker interface endpoint
+- CloudWatch Logs endpoint
+- Secrets Manager endpoint
+- SSM/SSM Messages/EC2 Messages endpoints
+
+Is se ECS tasks ECR se image pull, CloudWatch logs push, secrets read, aur AWS private services access kar sakte hain without NAT Gateway.
+
+Important modules
+-----------------
+
+Vpc: VPC, subnets, route tables, optional NAT, optional NACL, VPC endpoints.
+Load-balancer: ALB, target group, HTTP listener, optional HTTPS listener, optional WAF, optional access logs.
+Ecs: Fargate task definition, ECS service, CloudWatch log group, autoscaling, deployment circuit breaker.
+Ecr: Docker image repository, immutable tags, image scanning, lifecycle cleanup.
+Rds: Private MySQL RDS, managed password, encryption, subnet group, security group, Redis replication group.
+Iam: IAM groups, MFA policy, GitHub Actions OIDC role, ECS task/execution roles.
+Monitoring: CloudWatch alarms, dashboard, SNS email alerts, root login alert.
+
+How to run
+----------
+
+Dev local validation:
+
+1. `cd env/dev`
+2. `terraform init -backend=false`
+3. `terraform validate`
+4. `terraform plan`
+
+Real AWS deployment:
+
+1. Update backend bucket/table/key in `provider.tf`.
+2. Configure AWS credentials.
+3. `terraform init -reconfigure`
+4. `terraform plan`
+5. `terraform apply`
+
+Interview questions and answers
+-------------------------------
+
+Q: Why did you split Terraform into modules?
+A: Reusability and clean ownership. VPC, ECS, RDS, IAM, ECR and monitoring have separate responsibilities. Same modules can be used by dev, stage and prod with different variables.
+
+Q: Why are ECS tasks in private subnets?
+A: Tasks should not be directly reachable from the internet. Public traffic enters through ALB, then ALB forwards to ECS over security-group controlled private networking.
+
+Q: How did you reduce NAT Gateway cost?
+A: In dev, NAT is disabled and private AWS service access is handled through VPC endpoints. S3/DynamoDB use gateway endpoints, and ECR/Logs/Secrets/SSM use interface endpoints.
+
+Q: What is the difference between gateway and interface endpoints?
+A: Gateway endpoints attach to route tables and support S3/DynamoDB. Interface endpoints create private ENIs in subnets and expose AWS services over private IPs.
+
+Q: Why use ALB instead of exposing ECS directly?
+A: ALB gives stable public entry, health checks, target groups, TLS support, WAF integration, path-based routing and safer traffic management.
+
+Q: Why use ECR image immutability?
+A: Immutable tags stop accidental image overwrite. It improves deployment repeatability and rollback confidence.
+
+Q: Why enable scan-on-push?
+A: It detects known vulnerabilities in container images early in the pipeline.
+
+Q: Why use CloudWatch alarms?
+A: To detect high CPU, high memory, ALB 5XX errors, high latency and RDS CPU issues before users report problems.
+
+Q: What is ECS deployment circuit breaker?
+A: If a rolling deployment fails health checks, ECS can automatically stop and roll back the bad deployment.
+
+Q: Why use Redis?
+A: Redis is used as a cache for hot reads, reducing database load and improving response time. It also helps keep RDS smaller and cheaper.
+
+Q: Why keep WAF optional?
+A: WAF is useful for stage/prod, but it adds cost. Dev can run without it while production enables it.
+
+Q: What would you improve next?
+A: Add CI/CD pipeline with GitHub Actions, add tfvars per environment, add tfsec/checkov scanning, add Terraform tests, and create an application Docker image instead of nginx placeholder.
+
+Current honest status
+---------------------
+
+Dev Terraform configuration validated successfully after the fixes.
+
+Stage and prod are structured from the same validated configuration, but provider initialization may need internet access or a proper Terraform plugin cache before validation can run locally.
+
+Before real AWS apply, update backend S3 bucket, DynamoDB lock table, KMS alias, alert email, certificate ARN, and access log bucket according to your AWS account.

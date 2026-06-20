@@ -27,7 +27,7 @@ variable "idle_timeout" {
 variable "enable_deletion_protection" {
   description = "Production mein accidental deletion se bachane ke liye true hona chahiye"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "client_keep_alive" {
@@ -69,6 +69,7 @@ variable "ip_address_type" {
 variable "access_logs_bucket" {
   description = "S3 bucket for ALB access logs"
   type        = string
+  default     = null
 }
 
 variable "access_logs_prefix" {
@@ -127,6 +128,7 @@ variable "enable_stickiness" {
 variable "certificate_arn" {
   description = "ACM certificate ARN for HTTPS listener"
   type        = string
+  default     = null
 }
 
 variable "enable_waf" {

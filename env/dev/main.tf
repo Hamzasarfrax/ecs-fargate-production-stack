@@ -3,7 +3,7 @@ locals {
   common_tags = {
     Environment = var.environment
     Project     = var.project_name
-    ManagedBy   = "Terraform-Dev"
+    ManagedBy   = "Terraform"
     Owner       = "DevOps-Team"
   }
 }
@@ -125,9 +125,15 @@ resource "aws_iam_role_policy_attachment" "ecs_task_role_ecr_policy" {
 module "iam" {
   source = "../../modules/Iam"
 
-  # groups = var.iam_groups
-  # roles  = var.iam_roles
-  # tags   = merge(local.common_tags, var.tags)
+  name = {
+    name = "${var.project_name}-${var.environment}-iam"
+  }
+
+  env = {
+    name    = var.project_name
+    env     = var.environment
+    tagname = "${var.project_name}-${var.environment}"
+  }
 }
 
 
@@ -163,7 +169,8 @@ module "vpc" {
     }
   }
 
-  nat_gateway_strategy = "single"
+  nat_gateway_strategy = var.nat_gateway_strategy
+  enable_vpc_endpoints = true
   create_public_nacl   = false
 
   tags = merge(local.common_tags, var.tags)
@@ -173,17 +180,19 @@ module "vpc" {
 # load balancer module 
 
 module "load_balancer" {
-  source             = "../../modules/Load-balancer"
-  name               = "${var.project_name}-alb"
-  internal           = false
-  subnets            = module.vpc.public_subnet_ids
-  security_groups    = [aws_security_group.alb.id]
-  vpc_id             = module.vpc.vpc_id
-  tg_name            = "${var.project_name}-tg"
-  certificate_arn    = var.certificate_arn
-  access_logs_bucket = "my-dev-logs-bucket"
-  enable_waf         = true
-  tags               = merge(local.common_tags, var.tags)
+  source                     = "../../modules/Load-balancer"
+  name                       = "${var.project_name}-alb"
+  internal                   = false
+  subnets                    = module.vpc.public_subnet_ids
+  security_groups            = [aws_security_group.alb.id]
+  vpc_id                     = module.vpc.vpc_id
+  tg_name                    = "${var.project_name}-tg"
+  certificate_arn            = var.certificate_arn
+  access_logs_bucket         = var.alb_access_logs_bucket
+  access_logs_enabled        = var.alb_access_logs_bucket != null
+  enable_deletion_protection = var.environment == "prod"
+  enable_waf                 = false
+  tags                       = merge(local.common_tags, var.tags)
 }
 # the ecr module
 module "ecr" {
@@ -198,12 +207,19 @@ module "ecr" {
 #ecs module
 resource "aws_ecs_cluster" "main" {
   name = "${var.project_name}-cluster"
+
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+
+  tags = merge(local.common_tags, var.tags)
 }
 
 module "ecs" {
   source = "../../modules/Ecs"
 
-  aws_region      = "us-east-1"
+  aws_region      = var.aws_region
   environment     = var.environment
   service_name    = "my-app"
   cluster_name    = aws_ecs_cluster.main.name
@@ -233,7 +249,6 @@ module "rds" {
   environment           = var.environment
   identifier            = var.project_name
   private_subnet_ids    = module.vpc.private_subnet_ids
-  public_subnet_ids     = module.vpc.public_subnet_ids
   vpc_id                = module.vpc.vpc_id
   app_security_group_id = aws_security_group.ecs.id
 }
@@ -245,11 +260,11 @@ module "cloudwatch" {
   env            = var.environment
   service_name   = "my-app"
   cluster_name   = aws_ecs_cluster.main.name
-  db_instance_id = "${var.project_name}-db"
+  db_instance_id = module.rds.db_instance_id
   alb_arn_suffix = module.load_balancer.alb_arn_suffix
 
   sns_topic_arn = null # Will create internal topic
-  email         = "salma@salmatextiles.com"
+  email         = var.alert_email
 
   ecs_cpu_threshold    = 80
   ecs_memory_threshold = 80

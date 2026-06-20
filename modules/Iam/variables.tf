@@ -13,12 +13,21 @@ variable "env" {
   }
 }
 
+variable "name" {
+  description = "Project naming context."
+  type = object({
+    name = string
+  })
+  default = {
+    name = "my-app"
+  }
+}
+
 variable "groups" {
   description = "List of IAM groups to create"
   type        = set(string)
   default     = ["developers", "security", "readonly"]
 }
-
 
 
 

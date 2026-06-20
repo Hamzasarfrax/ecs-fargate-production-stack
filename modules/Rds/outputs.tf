@@ -1,6 +1,11 @@
-output "db_endpoint" {
+output "db_instance_endpoint" {
   value = aws_db_instance.this.endpoint
 }
+
+output "db_instance_id" {
+  value = aws_db_instance.this.id
+}
+
 output "db_port" {
   value = aws_db_instance.this.port
 }
@@ -14,6 +19,10 @@ output "secret_arn" {
   sensitive = true
 }
 
-# output "db_security_group_id" {
-#   value = aws_security_group.rds.id
-# }
+output "redis_endpoint" {
+  value = aws_elasticache_replication_group.redis.primary_endpoint_address
+}
+
+output "db_security_group_id" {
+  value = aws_security_group.rds.id
+}

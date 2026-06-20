@@ -16,10 +16,14 @@ resource "aws_lb" "this" {
   enable_cross_zone_load_balancing = var.enable_cross_zone_load_balancing
   ip_address_type                  = var.ip_address_type
 
-  access_logs {
-    bucket  = var.access_logs_bucket
-    prefix  = var.access_logs_prefix
-    enabled = var.access_logs_enabled
+  dynamic "access_logs" {
+    for_each = var.access_logs_enabled && var.access_logs_bucket != null ? [1] : []
+
+    content {
+      bucket  = var.access_logs_bucket
+      prefix  = var.access_logs_prefix
+      enabled = true
+    }
   }
 
   tags = var.tags
@@ -71,12 +75,18 @@ resource "aws_lb_listener" "http" {
   protocol = "HTTP"
 
   default_action {
-    type = "redirect"
+    type = var.certificate_arn == null ? "forward" : "redirect"
 
-    redirect {
-      protocol    = "HTTPS"
-      port        = "443"
-      status_code = "HTTP_301"
+    target_group_arn = var.certificate_arn == null ? aws_lb_target_group.this.arn : null
+
+    dynamic "redirect" {
+      for_each = var.certificate_arn == null ? [] : [1]
+
+      content {
+        protocol    = "HTTPS"
+        port        = "443"
+        status_code = "HTTP_301"
+      }
     }
   }
 }
@@ -86,6 +96,8 @@ resource "aws_lb_listener" "http" {
 ##################################
 
 resource "aws_lb_listener" "https" {
+  count = var.certificate_arn == null ? 0 : 1
+
   load_balancer_arn = aws_lb.this.arn
 
   port     = 443

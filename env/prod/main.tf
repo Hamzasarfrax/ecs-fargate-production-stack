@@ -190,7 +190,7 @@ module "load_balancer" {
   certificate_arn            = var.certificate_arn
   access_logs_bucket         = var.alb_access_logs_bucket
   access_logs_enabled        = var.alb_access_logs_bucket != null
-  enable_deletion_protection = var.environment == "prod"
+  enable_deletion_protection = true
   enable_waf                 = true
   tags                       = merge(local.common_tags, var.tags)
 }
@@ -246,11 +246,12 @@ module "ecs" {
 module "rds" {
   source = "../../modules/Rds"
 
-  environment           = var.environment
-  identifier            = var.project_name
-  private_subnet_ids    = module.vpc.private_subnet_ids
-  vpc_id                = module.vpc.vpc_id
-  app_security_group_id = aws_security_group.ecs.id
+  environment                            = var.environment
+  identifier                             = var.project_name
+  private_subnet_ids                     = module.vpc.private_subnet_ids
+  vpc_id                                 = module.vpc.vpc_id
+  app_security_group_id                  = aws_security_group.ecs.id
+  enable_cross_region_backup_replication = true
 }
 # module cloudwatch
 

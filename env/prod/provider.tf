@@ -11,7 +11,7 @@ terraform {
   # remote backed for state locking 
   backend "s3" {
     bucket         = "remote-backed-s3-bucket"
-    key            = "dev/terraform.tfstate"
+    key            = "prod/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true
     dynamodb_table = "remote-backed-s3-bucket-locks"
