@@ -1,20 +1,22 @@
 variable "name" {
-  type = string
+  description = "Name of the Load Balancer"
+  type        = string
 }
 
 variable "internal" {
-  type    = bool
-  default = false
+  description = "If true, the LB will be internal"
+  type        = bool
+  default     = false
 }
 
 variable "security_groups" {
-  type    = list(string)
-  default = []
+  description = "List of security group IDs for the ALB"
+  type        = list(string)
 }
 
 variable "subnets" {
-  type    = list(string)
-  default = []
+  description = "List of subnet IDs for the ALB"
+  type        = list(string)
 }
 
 variable "idle_timeout" {
@@ -23,8 +25,9 @@ variable "idle_timeout" {
 }
 
 variable "enable_deletion_protection" {
-  type    = bool
-  default = false
+  description = "Production mein accidental deletion se bachane ke liye true hona chahiye"
+  type        = bool
+  default     = false
 }
 
 variable "client_keep_alive" {
@@ -33,8 +36,9 @@ variable "client_keep_alive" {
 }
 
 variable "drop_invalid_header_fields" {
-  type    = bool
-  default = false
+  description = "Security best practice to drop invalid headers"
+  type        = bool
+  default     = true
 }
 
 variable "enable_http2" {
@@ -60,26 +64,17 @@ variable "enable_cross_zone_load_balancing" {
 variable "ip_address_type" {
   type    = string
   default = "ipv4"
-  validation {
-    condition = contains(
-      ["ipv4", "dualstack"],
-      var.ip_address_type
-    )
-    error_message = "ip_address_type must be ipv4 or dualstack."
-  }
 }
 
-# --------------------
-# Access Logs
-# --------------------
-
 variable "access_logs_bucket" {
-  type = string
+  description = "S3 bucket for ALB access logs"
+  type        = string
+  default     = null
 }
 
 variable "access_logs_prefix" {
   type    = string
-  default = "alb"
+  default = "alb-logs"
 }
 
 variable "access_logs_enabled" {
@@ -87,18 +82,10 @@ variable "access_logs_enabled" {
   default = true
 }
 
-# --------------------
-# Tags
-# --------------------
-
 variable "tags" {
   type    = map(string)
   default = {}
 }
-
-# --------------------
-# Target Group
-# --------------------
 
 variable "tg_name" {
   type = string
@@ -123,11 +110,29 @@ variable "vpc_id" {
   type = string
 }
 
-
 variable "health_check_path" {
-  default = "/health"
+  type    = string
+  default = "/"
 }
 
 variable "health_check_protocol" {
+  type    = string
   default = "HTTP"
+}
+
+variable "enable_stickiness" {
+  type    = bool
+  default = true
+}
+
+variable "certificate_arn" {
+  description = "ACM certificate ARN for HTTPS listener"
+  type        = string
+  default     = null
+}
+
+variable "enable_waf" {
+  description = "WAF protection for production workloads"
+  type        = bool
+  default     = true
 }

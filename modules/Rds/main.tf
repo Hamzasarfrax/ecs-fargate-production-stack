@@ -49,13 +49,13 @@ resource "aws_db_instance" "this" {
   }
 
   performance_insights_enabled    = var.environment == "prod" ? true : false
-  performance_insights_kms_key_id = aws_kms_key.rds.arn
+  performance_insights_kms_key_id = var.environment == "prod" ? aws_kms_key.rds.arn : null
 
   #   monitoring_interval = 60
 
   delete_automated_backups = false
 
-  deletion_protection = true
+  deletion_protection = var.environment == "prod" ? true : false
 
   db_subnet_group_name = aws_db_subnet_group.this.name
 
@@ -65,8 +65,8 @@ resource "aws_db_instance" "this" {
 
   publicly_accessible = false
 
-  skip_final_snapshot       = false
-  final_snapshot_identifier = "${var.identifier}-final-snapshot"
+  skip_final_snapshot       = var.environment == "prod" ? false : true
+  final_snapshot_identifier = var.environment == "prod" ? "${var.identifier}-final-snapshot" : null
 
   enabled_cloudwatch_logs_exports = [
     "error",
@@ -98,6 +98,7 @@ resource "aws_db_snapshot" "example" {
 
 # backup in "us-west-2"  region multi region replication
 resource "aws_db_instance_automated_backups_replication" "auto_backups" {
+  count                  = var.enable_cross_region_backup_replication ? 1 : 0
   provider               = aws.dr
   source_db_instance_arn = aws_db_instance.this.arn
   kms_key_id             = aws_kms_key.rds_dr.arn
@@ -107,10 +108,20 @@ resource "aws_db_instance_automated_backups_replication" "auto_backups" {
 
 resource "aws_db_subnet_group" "this" {
   name       = var.subnet_group_name
-  subnet_ids = var.private_subnet_range
+  subnet_ids = var.private_subnet_ids
 
   tags = {
     Name = var.identifier
+  }
+}
+
+resource "aws_elasticache_subnet_group" "redis" {
+  name       = "${var.identifier}-redis-subnet-group"
+  subnet_ids = var.private_subnet_ids
+
+  tags = {
+    Name        = "${var.identifier}-redis-subnet-group"
+    Environment = var.environment
   }
 }
 
@@ -195,7 +206,7 @@ resource "aws_elasticache_replication_group" "redis" {
 
   auto_minor_version_upgrade = false
 
-  subnet_group_name        = var.subnet_group_name
+  subnet_group_name        = aws_elasticache_subnet_group.redis.name
   snapshot_retention_limit = 7
   snapshot_window          = "01:00-02:00"
   maintenance_window       = "sun:03:00-sun:04:00"

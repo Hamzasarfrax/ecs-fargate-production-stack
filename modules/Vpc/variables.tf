@@ -115,6 +115,32 @@ variable "create_public_nacl" {
   default = false
 }
 
+variable "enable_vpc_endpoints" {
+  description = "Create private VPC endpoints so private workloads can reach AWS services without a NAT gateway."
+  type        = bool
+  default     = true
+}
+
+variable "gateway_endpoint_services" {
+  description = "Gateway endpoints attached to private route tables."
+  type        = set(string)
+  default     = ["s3", "dynamodb"]
+}
+
+variable "interface_endpoint_services" {
+  description = "Interface endpoints used by ECS tasks and application workloads in private subnets."
+  type        = set(string)
+  default = [
+    "ecr.api",
+    "ecr.dkr",
+    "logs",
+    "secretsmanager",
+    "ssm",
+    "ssmmessages",
+    "ec2messages"
+  ]
+}
+
 variable "tags" {
   type    = map(string)
   default = {}

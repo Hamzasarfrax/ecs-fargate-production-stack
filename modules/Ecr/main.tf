@@ -8,7 +8,7 @@ resource "aws_ecr_repository" "this" {
   }
 
   encryption_configuration {
-    encryption_type = "KMS"
+    encryption_type = var.kms_key_arn == null ? "AES256" : "KMS"
     kms_key         = var.kms_key_arn
   }
 
@@ -27,5 +27,5 @@ resource "aws_ecr_lifecycle_policy" "this" {
 
   repository = aws_ecr_repository.this.name
 
-  policy = file("./lifecycle-policy.json")
+  policy = file("${path.module}/lifecycle-policy.json")
 }

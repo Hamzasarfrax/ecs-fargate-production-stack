@@ -1,7 +1,7 @@
 variable "database_name" {
   type        = string
   description = "Name of the database"
-  default     = "app-db"
+  default     = "appdb"
 }
 
 variable "engine" {
@@ -45,7 +45,7 @@ variable "max_allocated_storage" {
 variable "username" {
   type        = string
   description = "Database username"
-  default     = "db-username"
+  default     = "dbadmin"
 }
 
 variable "multi_az" {
@@ -86,7 +86,7 @@ variable "backup_retention_period" {
 variable "blue_green_update" {
   type        = bool
   description = "Enable blue/green update"
-  default     = true
+  default     = false
 }
 
 variable "restore_to_point_in_time" {
@@ -101,10 +101,10 @@ variable "subnet_group_name" {
   default     = "main-db-subnet-group"
 }
 
-variable "private_subnet_range" {
+variable "private_subnet_ids" {
   type        = list(string)
   description = "List of private subnet IDs for the RDS instance"
-  default     = ["10.0.1.0/24", "10.0.2.0/24"]
+  default     = []
 }
 
 
@@ -123,8 +123,14 @@ variable "app_security_group_id" {
 
 variable "create_manual_snapshot" {
   type        = bool
-  default     = true
+  default     = false
   description = "Manual snapshot"
+}
+
+variable "enable_cross_region_backup_replication" {
+  type        = bool
+  default     = false
+  description = "Replicate automated RDS backups to the DR region. Enable for production only."
 }
 
 
@@ -149,6 +155,6 @@ variable "node_type" {
 
 variable "num_cache_clusters" {
   type        = number
-  default     = 2
+  default     = 1
   description = "Cache Cluster Number"
 }

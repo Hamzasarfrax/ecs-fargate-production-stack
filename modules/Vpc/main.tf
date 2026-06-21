@@ -11,6 +11,8 @@
 
 # ---------------- VPC ----------------
 
+data "aws_region" "current" {}
+
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = var.enable_dns_support
@@ -164,6 +166,65 @@ resource "aws_route_table_association" "attach_private_subnet" {
 
   subnet_id      = each.value.id
   route_table_id = aws_route_table.private_route_table[each.key].id
+}
+
+# ---------------- VPC ENDPOINTS ----------------
+
+resource "aws_security_group" "vpc_endpoints" {
+  count = var.enable_vpc_endpoints ? 1 : 0
+
+  name        = "${var.name}-vpce-sg"
+  description = "Allow private subnet workloads to use interface VPC endpoints over HTTPS."
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+
+  tags = merge(var.tags, {
+    Name        = "${var.name}-vpce-sg"
+    Environment = var.environment
+  })
+}
+
+resource "aws_vpc_endpoint" "gateway" {
+  for_each = var.enable_vpc_endpoints ? var.gateway_endpoint_services : []
+
+  vpc_id            = aws_vpc.main.id
+  service_name      = "com.amazonaws.${data.aws_region.current.region}.${each.value}"
+  vpc_endpoint_type = "Gateway"
+  route_table_ids   = values(aws_route_table.private_route_table)[*].id
+
+  tags = merge(var.tags, {
+    Name        = "${var.name}-${each.value}-gateway-endpoint"
+    Environment = var.environment
+  })
+}
+
+resource "aws_vpc_endpoint" "interface" {
+  for_each = var.enable_vpc_endpoints ? var.interface_endpoint_services : []
+
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${data.aws_region.current.region}.${each.value}"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = values(aws_subnet.private_subnet)[*].id
+  security_group_ids  = [aws_security_group.vpc_endpoints[0].id]
+  private_dns_enabled = true
+
+  tags = merge(var.tags, {
+    Name        = "${var.name}-${replace(each.value, ".", "-")}-interface-endpoint"
+    Environment = var.environment
+  })
 }
 
 # ---------------- OPTIONAL PUBLIC NACL ----------------

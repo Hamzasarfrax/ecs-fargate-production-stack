@@ -3,6 +3,11 @@ output "vpc_id" {
   description = "The ID of the VPC."
 }
 
+output "vpc_cidr" {
+  value       = aws_vpc.main.cidr_block
+  description = "The CIDR block of the VPC."
+}
+
 output "public_subnet_ids" {
   value       = values(aws_subnet.public_subnet)[*].id
   description = "List of public subnet IDs."
@@ -51,4 +56,14 @@ output "private_route_table_ids_by_name" {
 output "nat_gateway_ids_by_name" {
   value       = { for name, nat_gateway in aws_nat_gateway.nat_gateway : name => nat_gateway.id }
   description = "NAT Gateway IDs keyed by NAT Gateway name."
+}
+
+output "gateway_endpoint_ids" {
+  value       = { for name, endpoint in aws_vpc_endpoint.gateway : name => endpoint.id }
+  description = "Gateway VPC endpoint IDs keyed by AWS service name."
+}
+
+output "interface_endpoint_ids" {
+  value       = { for name, endpoint in aws_vpc_endpoint.interface : name => endpoint.id }
+  description = "Interface VPC endpoint IDs keyed by AWS service name."
 }

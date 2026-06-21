@@ -24,18 +24,6 @@ resource "aws_cloudwatch_log_group" "this" {
   })
 }
 
-#cluster
-
-resource "aws_ecs_cluster" "this" {
-  name = var.cluster_name
-
-  setting {
-    name  = "containerInsights"
-    value = "enabled"
-  }
-
-  tags = var.tags
-}
 # --------------------------------------------------------------------------------------------------
 # 2. ECS TASK DEFINITION
 # Defines the runtime blueprint for the container: Docker image, CPU, memory, exposed port,

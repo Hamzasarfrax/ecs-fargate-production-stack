@@ -56,13 +56,13 @@ variable "tags" {
 variable "environment" {
   description = "Environment name"
   type        = string
-  default     = "dev"
+  default     = "stage"
 }
 
 variable "project_name" {
   description = "Project name"
   type        = string
-  default     = "portfolio-aws-platform"
+  default     = "portfolio-aws-platform-stage"
 }
 
 variable "aws_region" {
