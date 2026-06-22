@@ -1,6 +1,6 @@
 # Portfolio AWS Platform
 
-Production-style AWS infrastructure for a containerized application platform, built with Terraform and reusable AWS modules. The project is designed to show how a real company can run an application securely across `dev`, `stage`, and `prod` with private networking, ECS Fargate, ALB, ECR, RDS, Redis, IAM, CloudWatch monitoring, and cost-aware VPC endpoint design.
+Production-style AWS infrastructure for a containerized application platform, built with Terraform and reusable AWS modules. The project is designed to show how a real company can run an application securely across `dev`, `stage`, and `prod` with CloudFront, private networking, ECS Fargate, ALB, ECR, RDS, Redis, IAM, CloudWatch monitoring, and cost-aware VPC endpoint design.
 
 The main goal is not only to create resources, but to show an engineering mindset: security first, cost control, automation, scalability, availability, fault tolerance, and clean module ownership.
 
@@ -25,6 +25,9 @@ Traffic enters through a public Application Load Balancer. ECS Fargate tasks run
 Internet
    |
    v
+CloudFront Edge Distribution
+   |
+   v
 Application Load Balancer (public subnets)
    |
    v
@@ -39,29 +42,31 @@ ECS Fargate Service (private subnets)
 
 ## Environments
 
-| Environment | Path | Purpose |
-| --- | --- | --- |
-| Dev | `env/dev` | Low-cost development. NAT disabled by default and WAF off. |
-| Stage | `env/stag` | Pre-production validation. WAF enabled for closer production testing. |
-| Prod | `env/prod` | Production profile. WAF and ALB deletion protection enabled. |
+| Environment | Path       | Purpose                                                               |
+| ----------- | ---------- | --------------------------------------------------------------------- |
+| Dev         | `env/dev`  | Low-cost development. NAT disabled by default and WAF off.            |
+| Stage       | `env/stag` | Pre-production validation. WAF enabled for closer production testing. |
+| Prod        | `env/prod` | Production profile. WAF and ALB deletion protection enabled.          |
 
 ## Modules
 
-| Module | Responsibility |
-| --- | --- |
-| `modules/Vpc` | VPC, public/private subnets, route tables, NAT strategy, VPC endpoints. |
-| `modules/Load-balancer` | ALB, target group, HTTP/optional HTTPS listener, optional WAF, optional access logs. |
-| `modules/Ecs` | ECS Fargate service, task definition, CloudWatch logs, autoscaling, deployment circuit breaker. |
-| `modules/Ecr` | Container registry, image scanning, immutable tags, lifecycle policy. |
-| `modules/Rds` | Private MySQL RDS, encryption, managed password, Redis cache, security groups. |
-| `modules/Iam` | IAM groups, MFA guardrail, GitHub Actions OIDC role, ECS task roles. |
-| `modules/Monitoring` | CloudWatch alarms, dashboard, SNS email alerts, root login alert. |
+| Module                  | Responsibility                                                                                  |
+| ----------------------- | ----------------------------------------------------------------------------------------------- |
+| `modules/Vpc`           | VPC, public/private subnets, route tables, NAT strategy, VPC endpoints.                         |
+| `modules/Cloudfront`    | Edge distribution in front of ALB, HTTPS redirect, optional aliases, optional access logs.      |
+| `modules/Load-balancer` | ALB, target group, HTTP/optional HTTPS listener, optional WAF, optional access logs.            |
+| `modules/Ecs`           | ECS Fargate service, task definition, CloudWatch logs, autoscaling, deployment circuit breaker. |
+| `modules/Ecr`           | Container registry, image scanning, immutable tags, lifecycle policy.                           |
+| `modules/Rds`           | Private MySQL RDS, encryption, managed password, Redis cache, security groups.                  |
+| `modules/Iam`           | IAM groups, MFA guardrail, GitHub Actions OIDC role, ECS task roles.                            |
+| `modules/Monitoring`    | CloudWatch alarms, dashboard, SNS email alerts, root login alert.                               |
 
 ## Security Highlights
 
 - ECS tasks run in private subnets with `assign_public_ip = false`.
 - RDS and Redis are private and only allow inbound traffic from the ECS security group.
 - ALB is the only public entry point.
+- CloudFront can sit in front of ALB to provide edge entry, HTTPS redirect, and future CDN/WAF controls.
 - IAM roles are separated for ECS execution, ECS task permissions, GitHub Actions, Terraform, and monitoring.
 - ECR scan-on-push is enabled for container vulnerability visibility.
 - RDS storage encryption and managed master password are used.
@@ -125,6 +130,22 @@ terraform plan
 
 For real AWS remote state, update each environment `provider.tf` backend with your actual S3 bucket, DynamoDB lock table, and KMS key alias.
 
+## LocalStack Testing
+
+The `test` folder is a local-only Terraform playground for practicing AWS-style workflows without creating real cloud resources. It uses fake AWS credentials and points provider endpoints to `http://localhost:4566`.
+
+```powershell
+docker run --rm -it -p 4566:4566 -p 4510-4559:4510-4559 localstack/localstack
+
+cd test
+terraform init
+terraform validate
+terraform plan
+terraform apply
+```
+
+The local test includes S3, EC2, and a CloudFront-style Terraform distribution. CloudFront local execution depends on the LocalStack version/edition available on your machine, so keep this as a learning and validation path while `env/dev`, `env/stag`, and `env/prod` remain the real AWS environments.
+
 ## Important Variables
 
 - `aws_region`: AWS region, default `us-east-1`.
@@ -141,6 +162,7 @@ For real AWS remote state, update each environment `provider.tf` backend with yo
 - Reusable modules with clear boundaries.
 - Private ECS, RDS, and Redis architecture.
 - VPC endpoints used as a NAT cost-reduction strategy.
+- CloudFront module in front of ALB for edge delivery and production-style traffic flow.
 - Optional production-grade controls like WAF, HTTPS, access logs, deletion protection, and backup replication.
 - ECS autoscaling and deployment circuit breaker.
 - CloudWatch alarms and operational dashboard.

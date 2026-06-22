@@ -83,6 +83,30 @@ variable "alb_access_logs_bucket" {
   default     = null
 }
 
+variable "enable_cloudfront" {
+  description = "Enable CloudFront in front of the ALB."
+  type        = bool
+  default     = true
+}
+
+variable "cloudfront_aliases" {
+  description = "Optional custom domains for CloudFront."
+  type        = list(string)
+  default     = []
+}
+
+variable "cloudfront_certificate_arn" {
+  description = "ACM certificate ARN for CloudFront aliases. Must be issued in us-east-1."
+  type        = string
+  default     = null
+}
+
+variable "cloudfront_logging_bucket" {
+  description = "Optional S3 bucket domain name for CloudFront logs, e.g. logs-bucket.s3.amazonaws.com."
+  type        = string
+  default     = null
+}
+
 variable "iam_groups" {
   description = "IAM groups for this environment."
   type = map(object({

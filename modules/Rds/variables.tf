@@ -127,11 +127,7 @@ variable "create_manual_snapshot" {
   description = "Manual snapshot"
 }
 
-variable "enable_cross_region_backup_replication" {
-  type        = bool
-  default     = false
-  description = "Replicate automated RDS backups to the DR region. Enable for production only."
-}
+
 
 
 variable "rds_port_inbound" {
