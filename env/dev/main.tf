@@ -194,6 +194,22 @@ module "load_balancer" {
   enable_waf                 = false
   tags                       = merge(local.common_tags, var.tags)
 }
+
+# cloudfront module
+module "cloudfront" {
+  count  = var.enable_cloudfront ? 1 : 0
+  source = "../../modules/Cloudfront"
+
+  name                = "${var.project_name}-${var.environment}"
+  origin_domain_name  = module.load_balancer.alb_dns_name
+  origin_id           = "${var.project_name}-alb-origin"
+  aliases             = var.cloudfront_aliases
+  acm_certificate_arn = var.cloudfront_certificate_arn
+  logging_bucket      = var.cloudfront_logging_bucket
+
+  tags = merge(local.common_tags, var.tags)
+}
+
 # the ecr module
 module "ecr" {
   source               = "../../modules/Ecr"

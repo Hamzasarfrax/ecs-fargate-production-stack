@@ -1,11 +1,3 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 6.0"
-    }
-  }
-}
 
 # --------------------------------------------------------------------------------------------------
 # 1. CLOUDWATCH LOG GROUP
@@ -124,6 +116,7 @@ resource "aws_ecs_service" "this" {
   }
 
   tags = var.tags
+
 }
 
 # --------------------------------------------------------------------------------------------------
@@ -133,7 +126,8 @@ resource "aws_ecs_service" "this" {
 # desired_count is ignored in the ECS service lifecycle because autoscaling owns that value after deploy.
 # --------------------------------------------------------------------------------------------------
 resource "aws_appautoscaling_target" "ecs" {
-  count              = var.enable_autoscaling ? 1 : 0
+
+  count              = var.environment == "prod" && var.enable_autoscaling ? 1 : 0
   min_capacity       = var.min_capacity
   max_capacity       = var.max_capacity
   resource_id        = "service/${var.cluster_name}/${var.service_name}"
@@ -144,7 +138,7 @@ resource "aws_appautoscaling_target" "ecs" {
 }
 
 resource "aws_appautoscaling_policy" "cpu" {
-  count              = var.enable_autoscaling ? 1 : 0
+  count              = var.environment == "prod" && var.enable_autoscaling ? 1 : 0
   name               = "${var.service_name}-cpu-scaling"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.ecs[0].resource_id
@@ -166,7 +160,7 @@ resource "aws_appautoscaling_policy" "cpu" {
 
 resource "aws_appautoscaling_policy" "memory" {
 
-  count = var.enable_autoscaling ? 1 : 0
+  count = var.environment == "prod" && var.enable_autoscaling ? 1 : 0
   name  = "${var.service_name}-memory-scaling"
 
   policy_type = "TargetTrackingScaling"
@@ -242,14 +236,14 @@ resource "aws_cloudwatch_metric_alarm" "memory_high" {
 
 
 resource "aws_codedeploy_app" "ecs" {
-  count            = var.enable_blue_green ? 1 : 0
+  count            = var.environment == "prod" && var.enable_autoscaling ? 1 : 0
   compute_platform = "ECS"
   name             = "${var.service_name}-app"
 }
 
 
 resource "aws_codedeploy_deployment_group" "ecs" {
-  count                 = var.enable_blue_green ? 1 : 0
+  count                 = var.environment == "prod" && var.enable_autoscaling ? 1 : 0
   app_name              = aws_codedeploy_app.ecs[0].name
   deployment_group_name = "${var.service_name}-dg"
 

@@ -11,6 +11,8 @@ provider "aws" {
   alias  = "dr"
   region = "us-west-2"
 }
+
+
 resource "aws_kms_key" "rds" {
   description = "RDS Encryption Key"
 }
@@ -80,7 +82,7 @@ resource "aws_db_instance" "this" {
   }
 
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
 
@@ -97,6 +99,11 @@ resource "aws_db_snapshot" "example" {
 }
 
 # backup in "us-west-2"  region multi region replication
+variable "enable_cross_region_backup_replication" {
+  type        = bool
+  default     = false
+  description = "Replicate automated RDS backups to the DR region. Enable for production only."
+}
 resource "aws_db_instance_automated_backups_replication" "auto_backups" {
   count                  = var.enable_cross_region_backup_replication ? 1 : 0
   provider               = aws.dr
