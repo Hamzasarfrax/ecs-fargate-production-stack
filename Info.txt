@@ -101,3 +101,8 @@ Dev Terraform configuration validated successfully after the fixes.
 Stage and prod are structured from the same validated configuration, but provider initialization may need internet access or a proper Terraform plugin cache before validation can run locally.
 
 Before real AWS apply, update backend S3 bucket, DynamoDB lock table, KMS alias, alert email, certificate ARN, and access log bucket according to your AWS account.
+
+
+########################
+
+........
