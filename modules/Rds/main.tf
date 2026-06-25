@@ -1,15 +1,11 @@
-# terraform {
-#   required_providers {
-#     aws = {
-#       source  = "hashicorp/aws"
-#       version = "~> 6.0"
-#     }
-#   }
-# }
-
-provider "aws" {
-  alias  = "dr"
-  region = "us-west-2"
+terraform {
+  required_providers {
+    aws = {
+      source                = "hashicorp/aws"
+      version               = "~> 6.0"
+      configuration_aliases = [aws.dr]
+    }
+  }
 }
 
 
@@ -18,6 +14,7 @@ resource "aws_kms_key" "rds" {
 }
 
 resource "aws_kms_key" "rds_dr" {
+  count       = var.enable_cross_region_backup_replication ? 1 : 0
   provider    = aws.dr
   description = "DR RDS Key"
 }
@@ -99,16 +96,11 @@ resource "aws_db_snapshot" "example" {
 }
 
 # backup in "us-west-2"  region multi region replication
-variable "enable_cross_region_backup_replication" {
-  type        = bool
-  default     = false
-  description = "Replicate automated RDS backups to the DR region. Enable for production only."
-}
 resource "aws_db_instance_automated_backups_replication" "auto_backups" {
   count                  = var.enable_cross_region_backup_replication ? 1 : 0
   provider               = aws.dr
   source_db_instance_arn = aws_db_instance.this.arn
-  kms_key_id             = aws_kms_key.rds_dr.arn
+  kms_key_id             = aws_kms_key.rds_dr[0].arn
   retention_period       = 14
 
 }

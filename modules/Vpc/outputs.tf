@@ -34,7 +34,7 @@ output "private_route_table_ids" {
 }
 
 output "nat_gateway_ids" {
-  value       = values(aws_nat_gateway.nat_gateway)[*].id
+  value       = try(values(aws_nat_gateway.nat_gateway)[*].id, [])
   description = "List of NAT Gateway IDs."
 }
 
@@ -54,7 +54,7 @@ output "private_route_table_ids_by_name" {
 }
 
 output "nat_gateway_ids_by_name" {
-  value       = { for name, nat_gateway in aws_nat_gateway.nat_gateway : name => nat_gateway.id }
+  value       = try({ for name, nat_gateway in aws_nat_gateway.nat_gateway : name => nat_gateway.id }, {})
   description = "NAT Gateway IDs keyed by NAT Gateway name."
 }
 

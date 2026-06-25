@@ -1,0 +1,91 @@
+name: CI/CD - Promote to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: "prod"
+        type: choice
+        options:
+          - stag
+          - prod
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: repository_image
+
+jobs:
+  terraform-plan:
+    name: Terraform Plan (${{ github.event.inputs.environment }})
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.0
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: env/${{ github.event.inputs.environment }}
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+        working-directory: env/${{ github.event.inputs.environment }}
+
+      - name: Upload plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-${{ github.event.inputs.environment }}
+          path: env/${{ github.event.inputs.environment }}/tfplan
+
+  deploy:
+    name: Terraform Apply (${{ github.event.inputs.environment }})
+    runs-on: ubuntu-latest
+    needs: [terraform-plan]
+    environment:
+      name: ${{ github.event.inputs.environment }}
+    if: github.event.inputs.environment == 'stag' || github.event.inputs.environment == 'prod'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.0
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: env/${{ github.event.inputs.environment }}
+
+      - name: Download plan
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-${{ github.event.inputs.environment }}
+          path: env/${{ github.event.inputs.environment }}
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
+        working-directory: env/${{ github.event.inputs.environment }}

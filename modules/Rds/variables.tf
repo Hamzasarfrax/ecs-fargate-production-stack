@@ -154,3 +154,9 @@ variable "num_cache_clusters" {
   default     = 1
   description = "Cache Cluster Number"
 }
+
+variable "enable_cross_region_backup_replication" {
+  type        = bool
+  default     = false
+  description = "Replicate automated RDS backups to the DR region. Enable for production only."
+}

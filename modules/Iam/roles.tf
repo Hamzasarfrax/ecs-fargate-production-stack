@@ -166,7 +166,7 @@ data "aws_iam_policy_document" "github_actions_policy" {
 
     resources = [
       aws_iam_role.ecs_task_execution_role.arn,
-      aws_iam_role.ecs_task_role.arn
+      var.ecs_task_role_arn
     ]
 
   }
@@ -231,24 +231,6 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_attach" {
 
 }
 
-############################################################
-# ECS APPLICATION ROLE
-############################################################
-
-resource "aws_iam_role" "ecs_task_role" {
-
-  name = "${var.name.name}-ecs-task-role"
-
-  assume_role_policy = data.aws_iam_policy_document.ecs_execution_assume_role.json
-
-  tags = local.common_tags
-
-}
-
-############################################################
-# ECS APP POLICY
-############################################################
-
 data "aws_iam_policy_document" "ecs_app_policy_document" {
 
   ##########################################################
@@ -297,14 +279,6 @@ resource "aws_iam_policy" "ecs_app_policy" {
   name = "${var.name.name}-ecs-app-policy"
 
   policy = data.aws_iam_policy_document.ecs_app_policy_document.json
-
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_app_attach" {
-
-  role = aws_iam_role.ecs_task_role.name
-
-  policy_arn = aws_iam_policy.ecs_app_policy.arn
 
 }
 

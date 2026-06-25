@@ -6,6 +6,7 @@ variable "service_name" {
 variable "sns_topic_arn" {
   type        = string
   description = "Existing SNS topic ARN. If null, internal topic will be used."
+  default     = null
 }
 
 variable "ecs_cpu_threshold" {

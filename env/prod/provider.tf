@@ -22,3 +22,8 @@ terraform {
 provider "aws" {
   region = var.aws_region
 }
+
+provider "aws" {
+  alias  = "dr"
+  region = "us-west-2"
+}

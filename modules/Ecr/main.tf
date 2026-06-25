@@ -17,6 +17,7 @@ resource "aws_ecr_repository" "this" {
 
 
 resource "aws_kms_key" "ecr" {
+  count                   = var.kms_key_arn == null ? 1 : 0
   description             = "ECR encryption key"
   deletion_window_in_days = 10
   enable_key_rotation     = true

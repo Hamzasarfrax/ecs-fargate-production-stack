@@ -134,6 +134,8 @@ module "iam" {
     env     = var.environment
     tagname = "${var.project_name}-${var.environment}"
   }
+
+  ecs_task_role_arn = aws_iam_role.ecs_task_role.arn
 }
 
 
@@ -261,6 +263,10 @@ module "ecs" {
 
 module "rds" {
   source = "../../modules/Rds"
+
+  providers = {
+    aws.dr = aws.dr
+  }
 
   environment           = var.environment
   identifier            = var.project_name

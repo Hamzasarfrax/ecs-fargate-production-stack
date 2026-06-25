@@ -1,13 +1,3 @@
-variable "remote_table" {
-  type    = string
-  default = "remote_backend_table_lock"
-}
-
-variable "encrypt_remote_s3" {
-  type    = string
-  default = "true"
-}
-
 variable "repository_name" {
   type    = string
   default = "repository_image"
@@ -106,54 +96,6 @@ variable "cloudfront_logging_bucket" {
   type        = string
   default     = null
 }
-
-variable "iam_groups" {
-  description = "IAM groups for this environment."
-  type = map(object({
-    name                = string
-    path                = optional(string, "/")
-    managed_policy_arns = optional(list(string), [])
-  }))
-  default = {
-    developers = {
-      name = "developers"
-      path = "/dev/"
-    }
-    production = {
-      name = "production"
-      path = "/prod/"
-    }
-    security = {
-      name = "security"
-      path = "/security/"
-    }
-  }
-}
-
-variable "iam_roles" {
-  description = "IAM roles for this environment."
-  type = map(object({
-    name                    = string
-    description             = optional(string, null)
-    path                    = optional(string, "/")
-    trusted_services        = list(string)
-    managed_policy_arns     = optional(list(string), [])
-    max_session_duration    = optional(number, 3600)
-    create_instance_profile = optional(bool, false)
-  }))
-  default = {
-    ec2_ssm = {
-      name                    = "dev-ec2-ssm-role"
-      description             = "Allows EC2 instances to use AWS Systems Manager."
-      path                    = "/service/"
-      trusted_services        = ["ec2.amazonaws.com"]
-      managed_policy_arns     = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"]
-      create_instance_profile = true
-    }
-  }
-}
-
-
 
 # for vpc
 

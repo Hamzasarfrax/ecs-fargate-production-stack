@@ -29,6 +29,11 @@ variable "groups" {
   default     = ["developers", "security", "readonly"]
 }
 
+variable "ecs_task_role_arn" {
+  description = "ARN of the ECS task role (created outside this module)"
+  type        = string
+}
+
 
 
 

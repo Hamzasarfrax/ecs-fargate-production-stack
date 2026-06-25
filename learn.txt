@@ -1,0 +1,332 @@
+================================================================================
+ DEVOPS ENGINEER - COMPLETE A TO Z GUIDE (Real Life Production Knowledge)
+================================================================================
+
+YEH SAB KUCH HAI JO EK REAL DEVOPS ENGINEER KO AANA CHAHIYE:
+
+============================================================================
+1. VERSION CONTROL - GIT & GITHUB/GITLAB/BITBUCKET
+============================================================================
+- git init, clone, add, commit, push, pull, fetch
+- Branching strategy: GitFlow, GitHub Flow, Trunk-Based Development
+- Pull Requests, Code Review, Merge Conflicts resolution
+- git rebase vs git merge
+- git stash, cherry-pick, revert, reset
+- Semantic versioning (semver) - v1.2.3 (major.minor.patch)
+- Git hooks (pre-commit, pre-push) for linting/testing
+- Tagging releases
+
+============================================================================
+2. CI/CD PIPELINES
+============================================================================
+- Continuous Integration: Har push/PR par code build + test + lint
+- Continuous Delivery: Auto-deploy to staging after tests pass
+- Continuous Deployment: Auto-deploy to production after staging
+- Pipeline stages: Lint -> Build -> Test -> Security Scan -> Deploy
+- GitHub Actions, GitLab CI, Jenkins, CircleCI, ArgoCD
+- Environment-specific variables & secrets management
+- Approval gates for production deployments
+- Rollback strategies: git revert + redeploy, ECS rollback, blue/green
+
+============================================================================
+3. CONTAINERS - DOCKER
+============================================================================
+- Dockerfile writing (multi-stage builds for smaller images)
+- docker build, run, exec, logs, ps, stop, rm
+- Docker Compose for local development
+- Docker networking, volumes, bind mounts
+- Image tagging strategy (git SHA, latest, semantic version)
+- Container security: non-root user, minimal base images (alpine, distroless)
+- .dockerignore to reduce build context
+- Docker layers caching optimization
+
+============================================================================
+4. CONTAINER ORCHESTRATION - KUBERNETES / ECS
+============================================================================
+- AWS ECS Fargate vs EC2 launch type
+- Task Definition, Service, Cluster concepts
+- ECS Service Auto Scaling (target tracking, step scaling)
+- ECS Rolling Update vs Blue/Green deployment
+- ECS Service Discovery, Service Connect
+- Kubernetes: Pods, Deployments, Services, Ingress, ConfigMaps, Secrets
+- kubectl commands, Helm charts
+- Pod health checks (liveness, readiness, startup probes)
+- Horizontal Pod Autoscaler (HPA), Cluster Autoscaler
+
+============================================================================
+5. INFRASTRUCTURE AS CODE (IaC)
+============================================================================
+- Terraform: HCL syntax, state management, modules, workspaces
+- Terraform init, plan, apply, destroy, fmt, validate
+- Remote state backend (S3 + DynamoDB locking)
+- Terraform modules for reusability
+- terraform import for existing resources
+- Terraform workspaces for environment separation
+- Sentinel / OPA policies for compliance
+- Terragrunt for DRY configuration
+- Pulumi, AWS CDK as alternatives
+
+============================================================================
+6. CLOUD PLATFORMS - AWS (PRIMARY)
+============================================================================
+- Compute: EC2, Lambda, ECS, EKS, Fargate, Elastic Beanstalk
+- Networking: VPC, Subnets, Route Tables, NAT Gateway, IGW, VPC Peering
+- Security Groups, NACLs, VPC Endpoints (Gateway vs Interface)
+- ALB vs NLB vs CloudFront (CDN)
+- Databases: RDS (MySQL, PostgreSQL), Aurora, DynamoDB, ElastiCache (Redis)
+- Storage: S3 (classes, lifecycle policies, versioning), EBS, EFS
+- IAM: Users, Groups, Roles, Policies, OIDC, SAML
+- Monitoring: CloudWatch, X-Ray, Prometheus, Grafana
+- Logging: CloudWatch Logs, ELK Stack, Loki
+- Secrets: AWS Secrets Manager, SSM Parameter Store
+- Container Registry: ECR (scanning, lifecycle policies)
+- DNS: Route 53
+- Caching: CloudFront, ElastiCache
+
+============================================================================
+7. MONITORING & OBSERVABILITY
+============================================================================
+- Pillars: Metrics, Logs, Traces, Alerts
+- CloudWatch: Alarms, Dashboards, Logs Insights, Synthetics Canaries
+- Prometheus + Grafana for Kubernetes monitoring
+- ELK Stack (Elasticsearch, Logstash, Kibana) for log aggregation
+- Distributed tracing: AWS X-Ray, Jaeger, OpenTelemetry
+- Black-box monitoring: external uptime checks (Pingdom, StatusCake)
+- SLOs, SLIs, SLAs - Service Level objectives/indicators/agreements
+- On-call rotation: PagerDuty, Opsgenie
+
+============================================================================
+8. SECURITY - DEVSECOPS
+============================================================================
+- IAM: Least privilege principle, roles not users for apps
+- OIDC for GitHub Actions (no long-lived AWS keys)
+- Secrets management: never hardcode, use Secrets Manager
+- Container scanning: Trivy, Snyk, ECR scan-on-push
+- SAST (static analysis): SonarQube, Semgrep
+- DAST (dynamic analysis): OWASP ZAP
+- Dependency scanning: Dependabot, Snyk
+- Infrastructure scanning: tfsec, Checkov, Terrascan
+- Network security: private subnets, security groups, WAF
+- Encryption at rest: KMS, EBS/RDS/S3 encryption
+- Encryption in transit: TLS everywhere
+- AWS GuardDuty, Security Hub, Config rules
+- Incident response plan
+
+============================================================================
+9. DATABASES & CACHING
+============================================================================
+- RDS: Multi-AZ (HA), Read Replicas (read scaling), Automated backups
+- Connection pooling: pgbouncer, RDS Proxy
+- Migrations: Phinx, Laravel Migrations, Flyway
+- Redis: caching, session storage, queues, rate limiting
+- MySQL/PostgreSQL: indexing, query optimization, slow query log
+
+============================================================================
+10. NETWORKING
+============================================================================
+- OSI Model (7 layers) - important for troubleshooting
+- TCP/IP, HTTP/HTTPS, DNS, SSL/TLS handshake
+- Load balancers: Layer 4 (NLB) vs Layer 7 (ALB)
+- CDN: CloudFront, Cloudflare
+- VPC design: public/private subnets, NAT, endpoints
+- Firewall: Security Groups (stateful), NACLs (stateless)
+- VPN: AWS Site-to-Site VPN, Client VPN, Direct Connect
+- Route 53: DNS routing policies (weighted, latency, geolocation, failover)
+
+============================================================================
+11. SCRIPTS & AUTOMATION
+============================================================================
+- Bash scripting: loops, conditionals, functions, error handling
+- Python for automation (boto3 for AWS)
+- JSON/YAML processing (jq, yq)
+- Makefile for common commands
+- Configuration management: Ansible, Chef, Puppet
+
+============================================================================
+12. LOGGING & DEBUGGING IN PRODUCTION
+============================================================================
+- Container debugging: docker exec, ECS Exec, kubectl exec
+- Log aggregation: CloudWatch Logs Insights, ELK, Loki
+- Port forwarding for DB access (never open to internet)
+- SSH tunneling, Session Manager (SSM) for bastion-less access
+- Health check endpoints (/health, /ready)
+- Structured logging (JSON format for easy parsing)
+
+============================================================================
+13. COST MANAGEMENT
+============================================================================
+- AWS Cost Explorer, Budgets, Anomaly Detection
+- Right-sizing: don't over-provision, use auto-scaling
+- Savings Plans / Reserved Instances for predictable workloads
+- S3 lifecycle policies (move old data to Glacier)
+- NAT Gateway cost: use VPC endpoints where possible
+- Dev/staging cost: auto-stop non-production resources after hours
+- Spot Instances for fault-tolerant batch workloads
+
+============================================================================
+14. HIGH AVAILABILITY & DISASTER RECOVERY
+============================================================================
+- Multi-AZ deployment (minimum 2 AZs for production)
+- Multi-Region DR strategy (active-passive or active-active)
+- RDS Multi-AZ, Read Replicas in different regions
+- Backup & Restore strategy: automated backups, manual snapshots
+- RTO (Recovery Time Objective): kitni der mein system wapas aana chahiye
+- RPO (Recovery Point Objective): kitna data loss acceptable hai
+- Chaos Engineering: intentionally break things to test resilience
+- Blue/Green deployment: zero-downtime deployment
+
+============================================================================
+15. PERFORMANCE OPTIMIZATION
+============================================================================
+- CDN for static assets (CloudFront)
+- Database query optimization, indexing, EXPLAIN plans
+- Caching layers: browser cache, CDN, Redis, application cache
+- Horizontal vs vertical scaling
+- Connection pooling for databases
+- Image optimization, lazy loading, code splitting
+- Auto-scaling policies (CPU, memory, request count)
+
+============================================================================
+16. REAL-LIFE TOOLS & STACK
+============================================================================
+- IaC: Terraform, Terragrunt, Pulumi
+- CI/CD: GitHub Actions, GitLab CI, Jenkins, ArgoCD
+- Containers: Docker, ECS, EKS (Kubernetes)
+- Monitoring: CloudWatch, Prometheus, Grafana, Datadog, New Relic
+- Logging: ELK, Loki, CloudWatch Logs
+- Security: Trivy, Snyk, SonarQube, WAF, GuardDuty
+- Secrets: AWS Secrets Manager, HashiCorp Vault, SOPS
+- Scripting: Bash, Python
+- Communication: Slack, PagerDuty, Opsgenie
+
+============================================================================
+17. TYPICAL DAY IN LIFE OF DEVOPS ENGINEER
+============================================================================
+1. Morning: Check alerts, dashboard health, pending deployments
+2. Deploy code to staging/production
+3. Fix CI/CD pipeline failures
+4. Automate manual processes (toil reduction)
+5. Infrastructure changes via Terraform
+6. Incident response: debug production issues
+7. Security patching (CVEs, library updates)
+8. On-call rotation (one week per month typically)
+9. Writing runbooks for operations
+10. Performance optimization and cost review
+
+============================================================================
+18. INTERVIEW KEYWORDS & CONCEPTS
+============================================================================
+- "Infrastructure as Code" (IaC)
+- "Immutable Infrastructure" - servers never modified after creation
+- "Shift Left" - security/testing earlier in pipeline
+- "GitOps" - git is single source of truth
+- "12 Factor App" methodology
+- "Stateless" applications (state goes to DB/Redis)
+- "Idempotent" deployments
+- "Zero-downtime deployment"
+- "Canary deployment" - roll out to small % first
+- "Chaos Engineering" - Netflix Chaos Monkey
+- "Well-Architected Framework" (AWS): 6 pillars
+
+============================================================================
+19. LARAVEL-SPECIFIC DEVOPS
+============================================================================
+- PHP-FPM + Nginx in Docker
+- OpCache, config caching (php artisan config:cache)
+- Route caching, view caching
+- Queue workers: Horizon, Supervisor
+- Scheduler: cron in container or ECS scheduled tasks
+-.env management via Secrets Manager
+- Laravel Octane (RoadRunner / Swoole) for high performance
+- Database migrations on deploy (separate job, manual for prod)
+- Storage: S3 for public uploads, local for dev
+
+============================================================================
+20. COMMON PRODUCTION ISSUES & SOLUTIONS
+============================================================================
+- "Container keeps restarting" -> Check logs, resource limits
+- "503 from ALB" -> Health check failing, target group issue
+- "Database connection pool exhausted" -> Increase pool size, optimize queries
+- "Out of memory" -> Increase container memory, fix memory leak
+- "Slow page load" -> Check DB queries, caching, CDN
+- "TLS/SSL certificate expired" -> Auto-renew with ACM
+- "Deployment failed" -> Check deployment circuit breaker, rollback
+- "IAM permission denied" -> Check role policies, trust relationships
+- "Disk space full" -> Log rotation, cleanup old images
+
+============================================================================
+21. IMPORTANT TERRAFORM COMMANDS (DAILY USE)
+============================================================================
+- terraform init                        # Initialize providers and modules
+- terraform fmt -recursive              # Format all files
+- terraform validate                    # Validate syntax
+- terraform plan -out=tfplan            # Create execution plan
+- terraform apply tfplan                # Apply the plan
+- terraform apply -auto-approve         # Apply without confirmation (for CI)
+- terraform destroy                     # Destroy infrastructure
+- terraform state list                  # List resources in state
+- terraform state show <resource>       # Show resource details
+- terraform import <address> <id>       # Import existing resource
+- terraform output                      # Show outputs
+
+============================================================================
+22. IMPORTANT AWS CLI COMMANDS (DAILY USE)
+============================================================================
+- aws sts get-caller-identity           # Check current AWS identity
+- aws ecs list-clusters                 # List ECS clusters
+- aws ecs list-services --cluster <c>   # List ECS services
+- aws ecs update-service ... --force-new-deployment
+- aws ecs describe-services ...         # Check service health
+- aws ecs execute-command ...            # ECS Exec into container
+- aws logs tail <group>                 # Tail CloudWatch logs
+- aws s3 cp/sync                        # Copy to/from S3
+- aws ecr get-login-password | docker login
+
+============================================================================
+23. GIT COMMANDS (DAILY USE)
+============================================================================
+- git status, git log --oneline -10
+- git add -p (interactive staging)
+- git commit -m "message"
+- git push origin <branch>
+- git pull --rebase
+- git branch -d <branch> (delete local)
+- git push origin --delete <branch> (delete remote)
+- git stash push -m "message", git stash pop
+- git cherry-pick <commit-hash>
+- git revert <commit-hash>
+
+============================================================================
+24. PRODUCTION CI/CD FLOW (AS PER THIS PROJECT)
+============================================================================
+Developer Push -> GitHub (main branch)
+  -> Trigger: deploy-dev.yml
+    -> Lint: terraform fmt, validate
+    -> Build: Docker build, Trivy scan, push to ECR
+    -> Deploy Infra: terraform plan + apply
+    -> Deploy App: force new ECS deployment
+
+Promote to Staging/Prod:
+  -> Manual trigger: deploy-prod.yml (workflow_dispatch)
+    -> Terraform Plan (review)
+    -> Manual Approval Gate
+    -> Terraform Apply
+    -> ECS deployment with new image
+
+============================================================================
+25. MISTAKES TO AVOID IN PRODUCTION
+============================================================================
+- Hardcoding secrets in code/environment variables
+- Using root AWS account instead of IAM roles
+- Opening database/Redis to 0.0.0.0
+- Not enabling deletion protection on production resources
+- Skipping health checks on ALB target groups
+- Deploying on Friday evening
+- Not monitoring anything until users complain
+- Using mutable image tags (like :latest) in production
+- Not having rollback plan
+- Ignoring security vulnerabilities (CVEs)
+
+============================================================================
+END OF LEARN.TXT - YE SAB KAM AYEGA REAL LIFE MEIN!
+============================================================================
